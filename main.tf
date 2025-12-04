@@ -1,7 +1,6 @@
 
 resource "google_compute_network" "vpc" {
   name = "myvpc"
-  cidr_block = var.vpc_cidr
   auto_create_subnetworks = false
 }
 
@@ -128,7 +127,7 @@ resource "google_compute_target_http_proxy" "http_proxy" {
 
 resource "google_compute_forwarding_rule" "rule" {
   name                  = "http-forwarding-rule"
-  provider              = google-beta
+  target                = google_compute_target_http_proxy.http_proxy.id
   port_range            = "80"
   load_balancing_scheme = "EXTERNAL"
 }
