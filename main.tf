@@ -108,7 +108,7 @@ resource "google_compute_backend_service" "backend" {
   protocol              = "HTTP"
   port_name             = "http"
   load_balancing_scheme = "EXTERNAL"
-  health_checks = google_compute_health_check.hc.id
+  health_checks         = [google_compute_health_check.hc.id]
 
   backend {
     group = google_compute_instance_group.web_group.self_link
