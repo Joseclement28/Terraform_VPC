@@ -7,6 +7,11 @@ variable "region" {
   default = "us-central1"
 }
 
-variable "zone" {
+variable "" {
   default = "us-central1-c"
 }
+
+variable "vpc_cidr" {
+  default = "10.0.0.0/16"
+}
+

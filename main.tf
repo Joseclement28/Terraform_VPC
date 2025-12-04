@@ -1,7 +1,7 @@
 
 resource "google_compute_network" "vpc" {
   name = "myvpc"
-  cidr_block = var.cvpc_cidr
+  cidr_block = var.vpc_cidr
   auto_create_subnetworks = false
 }
 
@@ -17,14 +17,6 @@ resource "google_compute_subnetwork" "sub2" {
   ip_cidr_range = "10.0.1.0/24"
   region        = var.region
   network       = google_compute_network.vpc.id
-}
-
-resource "google_compute_route" "default_internet" {
-  name        = "default_internet-route"
-  dest_range  = "0.0.0.0/0"
-  network     = google_compute_network.vpc.id
-  next_hop_ip = "true"
-  priority    = 1000
 }
 
 resource "google_compute_firewall" "firewall" {
@@ -84,8 +76,7 @@ resource "google_compute_instance" "vm2" {
 
 resource "google_compute_instance_group" "web_group" {
   name        = "web_ig"
-  description = "Terraform test instance group"
-
+  zone        = var.zone
   instances = [
     google_compute_instance.vm1.id,
     google_compute_instance.vm2.id
@@ -96,7 +87,7 @@ resource "google_compute_instance_group" "web_group" {
     port = "80"
   }
 
-  zone = var.zone
+  
 }
 
 resource "google_compute_health_check" "hc" {
@@ -143,6 +134,6 @@ resource "google_compute_forwarding_rule" "rule" {
 }
 
 output "load_balancer_ip" {
-  value = google_compute_global_forwarding_rule.rule.ip_address
+  value = google_compute_forwarding_rule.rule.ip_address
 }
  
