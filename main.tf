@@ -33,12 +33,14 @@ resource "google_compute_firewall" "firewall" {
 resource "google_storage_bucket" "bucket" {
   name          = "terraform-test-1204"
   location      = "US"
+  uniform_bucket_level_access = true
 }  
 
 resource "google_compute_instance" "vm1" {
   name         = "web-server1"
   machine_type = "e2-micro"
   zone         = var.zone
+  allow_stopping_for_update = true
 
   boot_disk {
     initialize_params {
@@ -47,7 +49,7 @@ resource "google_compute_instance" "vm1" {
   }
 
   network_interface {
-    network = google_compute_subnetwork.sub1.id
+    subnetwork = google_compute_subnetwork.sub1.id
     access_config {}
   }
 
@@ -57,7 +59,8 @@ resource "google_compute_instance" "vm1" {
 resource "google_compute_instance" "vm2" {
   name         = "web-server2"
   machine_type = "e2-micro"
-  zone         = "us-central1-b"
+  zone         = var.zone
+  allow_stopping_for_update = true
 
   boot_disk {
     initialize_params {
@@ -66,7 +69,7 @@ resource "google_compute_instance" "vm2" {
   }
 
   network_interface {
-    network = google_compute_subnetwork.sub2.id
+    subnetwork = google_compute_subnetwork.sub2.id
     access_config {}
   }
 
@@ -74,7 +77,7 @@ resource "google_compute_instance" "vm2" {
 }
 
 resource "google_compute_instance_group" "web_group" {
-  name        = "web_ig"
+  name        = "web-ig"
   zone        = var.zone
   instances = [
     google_compute_instance.vm1.id,
@@ -116,16 +119,16 @@ resource "google_compute_backend_service" "backend" {
 }
 
 resource "google_compute_url_map" "urlmap" {
-  name        = "web_urlmap"
+  name        = "web-urlmap"
   default_service = google_compute_backend_service.backend.id
 }
 
 resource "google_compute_target_http_proxy" "http_proxy" {
-  name                        = "http_proxy"
+  name                        = "http-proxy"
   url_map                     = google_compute_url_map.urlmap.id
 }
 
-resource "google_compute_forwarding_rule" "rule" {
+resource "google_compute_global_forwarding_rule" "rule" {
   name                  = "http-forwarding-rule"
   target                = google_compute_target_http_proxy.http_proxy.id
   port_range            = "80"
@@ -133,6 +136,6 @@ resource "google_compute_forwarding_rule" "rule" {
 }
 
 output "load_balancer_ip" {
-  value = google_compute_forwarding_rule.rule.ip_address
+  value = google_compute_global_forwarding_rule.rule.ip_address
 }
  
